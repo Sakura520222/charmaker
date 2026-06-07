@@ -1,0 +1,26 @@
+{
+    "save_location": "saved_characters",
+    "api_provider": "openai",
+    "dark_mode": false,
+    "preset": "Preset 1",
+    "check_token_count": false,
+    "groq_api_key": "YOUR_GROQ_API_KEY_HERE",
+    "openrouter_api_key": "YOUR_OPENROUTER_API_KEY_HERE",
+    "gemini_api_key": "YOUR_GEMINI_API_KEY_HERE",
+    "openai_api_key": "",
+    "openai_base_url": "",
+    "separate_system_messages": true,
+    "browser_config": {
+        "browser_type": null,
+        "binary_path": null
+    },
+    "provider_models": {
+        "groq": "llama-3.1-70b-versatile",
+        "openrouter": "openai/gpt-4o-mini",
+        "gemini": "gemini-2.0-flash-exp",
+        "openai": ""
+    },
+    "scraper_engine": "crawl4ai",
+    "crawl4ai_headless": true,
+    "output_language": "\u4e2d\u6587"
+}
