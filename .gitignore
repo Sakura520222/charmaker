@@ -5,3 +5,4 @@ logs/
 src/__pycache__/
 src/logs/
 src/saved_characters/
+*.log
