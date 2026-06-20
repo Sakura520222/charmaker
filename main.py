@@ -1,8 +1,15 @@
 import tiktoken
 import os
+import sys
 import re
+import subprocess
 import requests
 import tempfile
+
+# main.py 位于项目根目录，将 src/ 加入 sys.path 以便 import src 下的同级模块
+_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src')
+sys.path.insert(0, _SRC_DIR)
+
 from image_handler import ImageHandler
 from api_handler import APIHandler
 from scraper import scrape_with_selenium, is_valid_url_format
@@ -598,7 +605,8 @@ def main():
     config = config_manager.load_config()
 
     menu_actions = {
-        '0': lambda: os.system('python interface.py') or _exit_program(),
+        # 用 sys.executable 启动 src/interface.py（固定路径、无外部输入，subprocess 列表形式避免 shell 注入）
+        '0': lambda: subprocess.run([sys.executable, os.path.join(_SRC_DIR, "interface.py")]).returncode or _exit_program(),
         '1': lambda: run_character_creation_flow(config) if _is_provider_ready(config) else None,
         '2': lambda: run_system_prompt_flow(config) if _is_provider_ready(config) else None,
         '3': lambda: _settings_menu(config),

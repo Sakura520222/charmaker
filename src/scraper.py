@@ -590,12 +590,49 @@ def _write_browser_path_cache(browser_exe_path):
     print(f"  已写入浏览器路径缓存：{browser_exe_path}")
 
 
+def _patch_browser_manager_get_page():
+    """
+    修复 crawl4ai 0.6.3 在 use_managed_browser=True（托管浏览器）模式下连续抓取
+    多个 URL 时的 IndexError（browser_manager.py:967，context.pages[0] 越界）。
+
+    托管模式下所有抓取共用同一个 default_context：抓完第一个 URL 后该 page
+    会被关闭，context.pages 变空，随后 context.pages[0] 直接越界（首个 URL 因
+    复用初始 about:blank 页而成功，故表现为「第一个成功、其后全崩」）。
+
+    做法：调用原 get_page 前，若 default_context 没有任何 page 就先新建一个，
+    保证 pages[0] 不越界。保留托管浏览器 + 系统浏览器链路，不修改第三方库源码。
+    """
+    from crawl4ai.browser_manager import BrowserManager
+
+    if getattr(BrowserManager.get_page, "_charmaker_patched", False):
+        return  # 已打过补丁，避免重复包装
+
+    _orig_get_page = BrowserManager.get_page
+
+    async def _patched_get_page(self, crawlerRunConfig):
+        # 托管模式下，确保 default_context 至少有一个可用 page，
+        # 否则 crawl4ai 内部的 context.pages[0] 会因列表为空而越界。
+        if (
+            getattr(self.config, "use_managed_browser", False)
+            and self.default_context is not None
+            and not self.default_context.pages
+        ):
+            await self.default_context.new_page()
+        return await _orig_get_page(self, crawlerRunConfig)
+
+    _patched_get_page._charmaker_patched = True
+    BrowserManager.get_page = _patched_get_page
+
+
 def scrape_with_crawl4ai(urls, headless=True):
     try:
         from crawl4ai import BrowserConfig, CrawlerRunConfig, AsyncWebCrawler, DefaultMarkdownGenerator
     except ImportError:
         print("crawl4ai 未安装，回退到旧版抓取器。")
         return None
+
+    # 应用托管浏览器多 URL 抓取的 IndexError 补丁
+    _patch_browser_manager_get_page()
 
     async def _crawl():
         os.environ["NODE_OPTIONS"] = "--no-deprecation"

@@ -7,8 +7,9 @@ import requests
 import io
 from PIL import Image, ImageTk
 
-# Add the src directory to sys.path if not running from there
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# interface.py 位于 src/，需同时能 import src 下同级模块与项目根的 main.py
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))                               # src/
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))           # 项目根/
 
 from image_handler import ImageHandler
 from api_handler import APIHandler

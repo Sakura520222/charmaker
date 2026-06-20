@@ -7,3 +7,5 @@ src/logs/
 src/saved_characters/
 *.log
 src/config.json
+__pycache__/
+saved_characters/
